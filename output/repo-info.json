@@ -1,0 +1,12 @@
+{
+    "name": "sample-repo",
+    "description": "This is a sample repository to test the application.",
+    "stargazers_count": 42,
+    "forks_count": 10,
+    "html_url": "https://github.com/example/sample-repo",
+    "owner": {
+      "login": "example-user",
+      "html_url": "https://github.com/example-user"
+    }
+  }
+  
