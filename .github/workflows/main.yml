@@ -1,0 +1,71 @@
+name: CI/CD Pipeline
+
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+  # UTC time below, Run every day at 8:00 AM PST 
+   - cron: '0 16 * * *'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      PORT:
+        description: "Which port?"
+        required: false
+        default: 3000
+
+jobs:
+  build-and-test:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set Up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Run Tests
+      run: npm test
+
+  fetch-repo-info:
+    runs-on: self-hosted
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Fetch Repository Info
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+             -H "Accept: application/vnd.github.v3+json" \
+             https://api.github.com/repos/${{ github.repository }} > repo-info.json
+
+    - name: Save Repository Info
+      run: |
+        mkdir -p output
+        mv repo-info.json output/
+        echo "Repository info saved."
+
+  deploy:
+    needs: [build-and-test, fetch-repo-info]
+    runs-on: self-hosted
+
+    steps:
+    - name: Deploy to Staging
+      run: |
+        echo "Deploying application..."
+        npm run dev
+        
+        
