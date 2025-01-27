@@ -3,9 +3,9 @@ name: CI/CD Pipeline
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Triggers the workflow on push events but only for the "main" branch
 
-  pull_request:
+  push:
     branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -35,28 +35,9 @@ jobs:
     - name: Run Tests
       run: npm test
 
-  fetch-repo-info:
-    runs-on: self-hosted
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    - name: Fetch Repository Info
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        curl -H "Authorization: Bearer $GITHUB_TOKEN" \
-             -H "Accept: application/vnd.github.v3+json" \
-             https://api.github.com/repos/${{ github.repository }} > repo-info.json
-
-    - name: Save Repository Info
-      run: |
-        mkdir -p output
-        mv repo-info.json output/
-        echo "Repository info saved."
 
   deploy:
-    needs: [build-and-test, fetch-repo-info]
+    needs: [build-and-test]
     runs-on: self-hosted
 
     steps:
